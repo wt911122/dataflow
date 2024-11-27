@@ -6,7 +6,7 @@
     </div>
 </template>
 <script setup>
-import { defineProps, toRaw, ref, inject, onMounted, onBeforeUnmount, computed } from 'vue';
+import { defineProps, watch, toRaw, ref, inject, onMounted, onBeforeUnmount, computed } from 'vue';
 const reOrderAndReflow = inject('reOrderAndReflow');
 const getProgram = inject('getProgram');
 const props = defineProps({
@@ -24,6 +24,7 @@ const output = ref('');
 //     node.setValue(+val)
 //     node.process();
 // }
+
 const onChange = (e) => {
     const program = getProgram();
     const programNode = toRaw(props.source);
@@ -43,6 +44,7 @@ const updateValue = () => {
     expression.value = operator.expression;
     input.value = inputContent.join(', ');
 }
+const stop = watch(() => props.source, updateValue)
 onMounted(() => {
     const node = toRaw(props.source);
     updateValue();
@@ -50,6 +52,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+    stop();
     const node = toRaw(props.source);
     node.addEventListener('output', updateValue)
 })
