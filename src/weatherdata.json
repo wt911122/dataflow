@@ -1,0 +1,71 @@
+{
+	"nodes": [
+		{
+			"name": "a",
+			"value": 1,
+			"type": "Numeric",
+			"position": [
+				224.1413116455078,
+				228.49908447265625
+			]
+		},
+		{
+			"name": "getProvinces",
+			"URL": "http://nmc.cn/rest/province",
+			"type": "API",
+			"position": [
+				219.76145935058594,
+				114.85009765625
+			]
+		},
+		{
+			"name": "getCityCode",
+			"expression": "async ({ province }) => {\n                const res = await fetch('http://nmc.cn/rest/province/'+ province);\n                const citys = await res.json();\n                return citys[0].code\n            }",
+			"type": "Function",
+			"position": [
+				653.6106669108071,
+				156.22573997860857
+			]
+		},
+		{
+			"name": "getWeather",
+			"expression": "async ({ stationid }) => {\n                const res = await fetch('http://nmc.cn/rest/weather?stationid='+ stationid);\n                const weather = await res.json();\n                return weather\n            }",
+			"type": "Function",
+			"position": [
+				878.4952915736609,
+				154.53509812127973
+			]
+		},
+		{
+			"name": "Function8",
+			"expression": "({list, idx}) => {\n            return list[idx].code\n        }",
+			"type": "Function",
+			"position": [
+				438.09979248046875,
+				159.19390869140625
+			]
+		}
+	],
+	"links": [
+		[
+			"a",
+			"Function8",
+			"idx"
+		],
+		[
+			"getProvinces",
+			"Function8",
+			"list"
+		],
+		[
+			"Function8",
+			"getCityCode",
+			"province"
+		],
+		[
+			"getCityCode",
+			"getWeather",
+			"stationid"
+		]
+	]
+}
