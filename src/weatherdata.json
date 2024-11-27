@@ -11,16 +11,16 @@
 		},
 		{
 			"name": "getProvinces",
-			"URL": "http://nmc.cn/rest/province",
+			"URL": "https://api.allorigins.win/get?url=http%3A%2F%2Fnmc.cn%2Frest%2Fprovince",
 			"type": "API",
 			"position": [
-				219.76145935058594,
-				114.85009765625
+				67.24758911132812,
+				279.8070983886719
 			]
 		},
 		{
 			"name": "getCityCode",
-			"expression": "async ({ province }) => {\n                const res = await fetch('http://nmc.cn/rest/province/'+ province);\n                const citys = await res.json();\n                return citys[0].code\n            }",
+			"expression": "async ({ province }) => {\n                const res = await fetch('https://api.allorigins.win/get?url=http%3A%2F%2Fnmc.cn%2Frest%2Fprovince%2F'+ province);\n                const citys = await res.json();\n                const q = JSON.parse(citys.contents);\n                return q[0].code\n            }",
 			"type": "Function",
 			"position": [
 				653.6106669108071,
@@ -29,7 +29,7 @@
 		},
 		{
 			"name": "getWeather",
-			"expression": "async ({ stationid }) => {\n                const res = await fetch('http://nmc.cn/rest/weather?stationid='+ stationid);\n                const weather = await res.json();\n                return weather\n            }",
+			"expression": "async ({ stationid }) => {\n                const res = await fetch('https://api.allorigins.win/get?url=http%3A%2F%2Fnmc.cn%2Frest%2Fweather%3Fstationid%3D'+ stationid);\n                const weather = await res.json();\n                return weather\n            }",
 			"type": "Function",
 			"position": [
 				878.4952915736609,
@@ -38,7 +38,7 @@
 		},
 		{
 			"name": "Function8",
-			"expression": "({list, idx}) => {\n            return list[idx].code\n        }",
+			"expression": "({list, idx}) => {\n            return JSON.parse(list.contents)[idx].code\n        }",
 			"type": "Function",
 			"position": [
 				438.09979248046875,
@@ -48,14 +48,14 @@
 	],
 	"links": [
 		[
-			"a",
-			"Function8",
-			"idx"
-		],
-		[
 			"getProvinces",
 			"Function8",
 			"list"
+		],
+		[
+			"a",
+			"Function8",
+			"idx"
 		],
 		[
 			"Function8",
