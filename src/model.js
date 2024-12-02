@@ -27,7 +27,7 @@ class Output {
     }
 }
 
-class Decalaration {
+export class Decalaration {
     arguments = {}
     constructor(inputs) {
         inputs.forEach(({ keyword, type }) => {
@@ -262,7 +262,7 @@ export class ProgramNode extends Node {
     }
 }
 
-class SignalIn extends EventTarget{
+export class SignalIn extends EventTarget{
     output = new Output();
     constructor() {
         super();
@@ -276,84 +276,6 @@ class SignalIn extends EventTarget{
     updateSignal(outputValue) {
         this.output.setValue(outputValue);
         this.dispatchEvent(new CustomEvent('update'))
-    }
-}
-
-export class APISignal extends SignalIn{
-    name = ''
-    type = 'API';
-    constructor(source) {
-        super()
-        this.name = source.name;
-        this.url = source.URL;
-        
-        this.fetchData();
-    }
-
-    async fetchData() {
-        const res = await fetch(this.url);
-        const json = await res.json();
-        this.updateSignal(json);
-    }
-
-    setURL(url) {
-        this.url = url;
-        this.fetchData();
-    }
-
-    exportData() {
-        return {
-            name: this.name,
-            URL: this.url
-        }
-    }
-}
-
-
-export class StringSignal extends SignalIn{
-    name = ''
-    type = 'String';
-    constructor(source) {
-        super()
-        this.name = source.name;
-        this.value = source.value;
-        this.updateSignal(source.value);
-    }
-
-    setValue(val) {
-        this.value = val;
-        this.updateSignal(val);
-    }
-
-    exportData() {
-        return {
-            name: this.name,
-            value: this.value
-        }
-    }
-}
-
-
-export class NumericSignal extends SignalIn{
-    name = ''
-    type = 'Numeric';
-    constructor(source) {
-        super()
-        this.name = source.name;
-        this.value = source.value;
-        this.updateSignal(source.value);
-    }
-
-    setValue(val) {
-        this.value = val;
-        this.updateSignal(val);
-    }
-
-    exportData() {
-        return {
-            name: this.name,
-            value: this.value
-        }
     }
 }
 
@@ -385,7 +307,7 @@ export class SignalInNode extends Node {
     }
 }
 
-class SignalOut extends EventTarget{
+export class SignalOut extends EventTarget{
     input = {};
     constructor() {
         super();
@@ -401,14 +323,12 @@ class SignalOut extends EventTarget{
         delete this.input[key];
     }
 
-    async run() {
-        await this.func.call(null, this.input);
-    }
+    async run() {}
 
     clear() { }
 }
 
-class SignalOutnode extends Node {
+export class SignalOutNode extends Node {
     signal = null;
     type = 'SignalOut';
     status = PROGRAM_NODE_STATUS.OFF;
@@ -424,8 +344,10 @@ class SignalOutnode extends Node {
 
     async process(key, value) {
         this.signal.addInput(key, value);
-        await this.signal.run();
-        this.status = PROGRAM_NODE_STATUS.ON;
+        if(this.signal.validate()) {
+            await this.signal.run();
+            this.status = PROGRAM_NODE_STATUS.ON;
+        }
     }
 
     linkIn(other, key) {
@@ -451,6 +373,13 @@ class SignalOutnode extends Node {
     clear() {
         this.status = PROGRAM_NODE_STATUS.OFF;
         this.signal.clear();
+    }
+
+    exportData() {
+        return {
+            ...this.signal.exportData(),
+            ...super.exportData()
+        }
     }
 }
 
@@ -508,9 +437,46 @@ class Link {
     }
 }
 
-class Program {
+const functionTypeResolver = (n) => {
+    if(!n.name) {
+        n.name = `Function${uuid++}`
+    }
+    const declaration = n.declaration;
+    const op = new Operator(n.name, n.expression)
+    const q = new ProgramNode(op);
+    q.position = n.position;
+    return {
+        name: n.name,
+        node: q
+    }
+}
+
+export class NodeResolver {
+    _resolvers = new Map();
+    constructor() {
+        this.add('Function', functionTypeResolver)
+    }
+    add(type, resolver){
+        this._resolvers.set(type, resolver);
+    }
+    resolve(source){
+        const type = source.type;
+        const resolver = this._resolvers.get(type);
+        if(resolver) {
+            return resolver(source);
+        }
+        return null;
+    }
+}
+
+export class Program {
     nodes = new Map();
     links = new Map();
+    
+    nodeResolver = null;
+    constructor(nodeResolver) {
+        this.nodeResolver = nodeResolver
+    }
     
     load(source) {
         this.nodes = new Map();
@@ -536,43 +502,10 @@ class Program {
     }
 
     addNode(n) {
-        if(n.type === 'Numeric') {
-            if(!n.name) {
-                n.name = `Numeric${uuid++}`
-            }
-            const variableSignal = new NumericSignal(n);
-            const node = new SignalInNode(variableSignal);
-            node.position = n.position;
-            this.nodes.set(n.name, node)
-        }
-        if(n.type === 'String') {
-            if(!n.name) {
-                n.name = `String${uuid++}`
-            }
-            const strSignal = new StringSignal(n);
-            const node = new SignalInNode(strSignal);
-            node.position = n.position;
-            this.nodes.set(n.name, node)
-        }
-        if(n.type === 'API') {
-            if(!n.name) {
-                n.name = `API${uuid++}`
-            }
-            const variableSignal = new APISignal(n);
-            const node = new SignalInNode(variableSignal);
-            node.position = n.position;
-            this.nodes.set(n.name, node)
-        }
-        if(n.type === 'Function') {
-            if(!n.name) {
-                n.name = `Function${uuid++}`
-            }
-            // const expression = eval(n.expression);
-            const declaration = n.declaration;
-            const op = new Operator(n.name, n.expression)
-            const q = new ProgramNode(op);
-            q.position = n.position;
-            this.nodes.set(n.name, q);
+        const resolved = this.nodeResolver.resolve(n);
+        if(resolved) {
+            const { name, node } = resolved;
+            this.nodes.set(name, node);
         }
     }
 

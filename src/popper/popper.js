@@ -4,6 +4,7 @@ import numericPopper from './numeric-popper.vue';
 import stringPopper from './string-popper.vue';
 import APIPopper from './api-poppover.vue';
 import programPopper from './program-popper.vue';
+import componentoutPopper from './componentout-popper.vue';
 import createPopper from './create-popper.vue';
 
 function getComponent(type) {
@@ -16,6 +17,8 @@ function getComponent(type) {
             return APIPopper;
         case 'program':
             return programPopper;
+        case 'componentout':
+            return componentoutPopper;
         case 'create':
             return createPopper;
     }

@@ -37,28 +37,57 @@
 			]
 		},
 		{
-			"name": "Function8",
+			"name": "Functionx8",
 			"expression": "({list, idx}) => {\n            return JSON.parse(list.contents)[idx].code\n        }",
 			"type": "Function",
 			"position": [
 				438.09979248046875,
 				159.19390869140625
 			]
+		},
+        {
+			"name": "getContents",
+			"expression": "({list}) => {\n            return JSON.parse(list.contents)\n        }",
+			"type": "Function",
+			"position": [
+				324.1413116455078,
+				428.49908447265625
+			]
+		},
+        {
+			"name": "ComponentSignalOutA",
+			"componentName": "selectorA",
+            "expression": "({ data }, component) => { console.log(component); component.updateData(data) }",
+			"type": "ComponentSignalOut",
+			"position": [
+				424.1413116455078,
+				428.49908447265625
+			]
+		},
+        {
+			"name": "barChartAOut",
+			"componentName": "barChartA",
+            "expression": "({ data }, component) => { console.log(component); component.updateData(data) }",
+			"type": "ComponentSignalOut",
+			"position": [
+				624.1413116455078,
+				428.49908447265625
+			]
 		}
 	],
 	"links": [
 		[
 			"getProvinces",
-			"Function8",
+			"Functionx8",
 			"list"
 		],
 		[
 			"a",
-			"Function8",
+			"Functionx8",
 			"idx"
 		],
 		[
-			"Function8",
+			"Functionx8",
 			"getCityCode",
 			"province"
 		],

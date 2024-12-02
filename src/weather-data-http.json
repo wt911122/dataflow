@@ -1,0 +1,180 @@
+{
+	"nodes": [
+		{
+			"name": "a",
+			"value": 1,
+			"type": "Numeric",
+			"position": [
+				210.96162463490484,
+				30.56583973642343
+			]
+		},
+		{
+			"name": "getProvinces",
+			"URL": "http://nmc.cn/rest/province",
+			"type": "API",
+			"position": [
+				94.42727517177106,
+				192.40148856636998
+			]
+		},
+		{
+			"name": "getCityCode",
+			"expression": "async ({ province }) => {\n                const res = await fetch('http://nmc.cn/rest/province/'+ province);\n                const citys = await res.json();\n              return citys;\n            }",
+			"type": "Function",
+			"position": [
+				517.509983165909,
+				307.7276239235873
+			]
+		},
+		{
+			"name": "getWeather",
+			"expression": "async ({ stationid }) => {\n                const res = await fetch('http://nmc.cn/rest/weather?stationid='+ stationid);\n                const weather = await res.json();\n                return weather\n            }",
+			"type": "Function",
+			"position": [
+				912.8700439003306,
+				573.996814060815
+			]
+		},
+		{
+			"name": "Functionx8",
+			"expression": "({list, idx}) => {\n            return list[idx].code\n        }",
+			"type": "Function",
+			"position": [
+				90.27273461649882,
+				37.600835938291524
+			]
+		},
+		{
+			"name": "getContents",
+			"expression": "({list}) => {\n            return list;\n        }",
+			"type": "Function",
+			"position": [
+				101.18226623535156,
+				446.26959228515625
+			]
+		},
+		{
+			"name": "ComponentSignalOutA",
+			"componentName": "selectorA",
+			"expression": "({ data }, component) => { component.updateData(data) }",
+			"type": "ComponentSignalOut",
+			"position": [
+				325.792838349886,
+				197.89721437015535
+			]
+		},
+		{
+			"name": "ComponentSignalInA",
+			"componentName": "selectorA",
+			"type": "ComponentSignalIn",
+			"position": [
+				324.0990748867511,
+				306.52855277656556
+			]
+		},
+		{
+			"name": "ComponentSignalOutB",
+			"componentName": "selectorB",
+			"expression": "({ data, contentField, valueField }, component) => { component.updateData(data, contentField, valueField) }",
+			"type": "ComponentSignalOut",
+			"position": [
+				651.5475921630859,
+				457.1864013671875
+			]
+		},
+		{
+			"name": "ComponentSignalInB",
+			"componentName": "selectorB",
+			"type": "ComponentSignalIn",
+			"position": [
+				677.0973333823575,
+				570.8172676348688
+			]
+		},
+		{
+			"name": "String0",
+			"value": "city",
+			"type": "String",
+			"position": [
+				474.9647981103194,
+				442.80476101832653
+			]
+		},
+		{
+			"name": "String1",
+			"value": "code",
+			"type": "String",
+			"position": [
+				465.46615585021,
+				578.3475008231599
+			]
+		},
+		{
+			"name": "barChartAOut",
+			"componentName": "barChartA",
+			"expression": "({ data }, component) => { console.log('barchart', component); component.updateData(data) }",
+			"type": "ComponentSignalOut",
+			"position": [
+				1163.781270713989,
+				665.0364331467988
+			]
+		},
+		{
+			"name": "Function23",
+			"expression": "({data}) => {\n            return data.data.passedchart\n        }",
+			"type": "Function",
+			"position": [
+				977.1403583500897,
+				659.0616221443752
+			]
+		}
+	],
+	"links": [
+		[
+			"a",
+			"Functionx8",
+			"idx"
+		],
+		[
+			"getProvinces",
+			"ComponentSignalOutA",
+			"data"
+		],
+		[
+			"ComponentSignalInA",
+			"getCityCode",
+			"province"
+		],
+		[
+			"getCityCode",
+			"ComponentSignalOutB",
+			"data"
+		],
+		[
+			"String0",
+			"ComponentSignalOutB",
+			"contentField"
+		],
+		[
+			"String1",
+			"ComponentSignalOutB",
+			"valueField"
+		],
+		[
+			"ComponentSignalInB",
+			"getWeather",
+			"stationid"
+		],
+		[
+			"getWeather",
+			"Function23",
+			"data"
+		],
+		[
+			"Function23",
+			"barChartAOut",
+			"data"
+		]
+	]
+}

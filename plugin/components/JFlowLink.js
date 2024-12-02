@@ -63,7 +63,6 @@ export default function (nameNode) {
             const refresh = () => {
                 const fromInstance = jflow.getRenderNodeBySource(toRaw(props.from));
                 const toInstance = jflow.getRenderNodeBySource(toRaw(props.to));
-                console.log(fromInstance, toInstance)
                 if(!exposeObj._jflowInstance) {
                     createInstance(fromInstance, toInstance);
                 } else {

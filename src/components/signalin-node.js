@@ -3,7 +3,7 @@ import ProgramNode from './program-node.vue';
 import NumericNode from './numeric-node.vue';
 import StringNode from './string-node.vue';
 import APINode from './api-node.vue';
-
+import ComponentSignalInNode from './component-in-node.vue';
 
 function getComponent(type) {
     switch(type) {
@@ -13,6 +13,8 @@ function getComponent(type) {
             return StringNode;
         case 'API':
             return APINode;
+        case 'ComponentSignalIn':
+            return ComponentSignalInNode;
     }
     return null;
 }

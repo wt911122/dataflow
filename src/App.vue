@@ -1,76 +1,80 @@
 <template>
     <div :class="$style.body">
-        <!-- <div :class="$style.sidebar">
-            <div>
-                <div draggable="true" :class="$style.part" type="variable" @dragstart="onDragVariable">Variable</div>
+        <div>
+            <div style="position: relative;">
+                <j-jflow ref="jflow" 
+                    :class="$style.wrapper" 
+                    :configs="jflowconfigs"
+                    :genVueComponentKey="genVueComponentKey"
+                    @update:loading="onload"
+                    @click="onClickNoWhere"
+                    @link="link"
+                    @pressEnd="onDrop"
+                    @contextclick="openCreatePopper">
+                    <template #SignalIn="{ source }">
+                        <SignalInNode :node="source"></SignalInNode>
+                    </template>
+                    <template #SignalOut="{ source }">
+                        <SignalOutNode :node="source"></SignalOutNode>
+                    </template>
+                    <template #Function="{ source }">
+                        <ProgramNode :node="source"></ProgramNode>
+                    </template>
+                    <template #plainlink="{ configs }">
+                        <program-link :configs="configs"></program-link>
+                    </template>
+                </j-jflow>
+                <div :class="$style.groundAnchor" ref="groundAnchor">
+                    <Popper :meta="popper"></Popper>
+                </div>
             </div>
             <div>
-                <div draggable="true" :class="$style.part" type="operator" @dragstart="onDragOperator">Operator</div>
-            </div>
-        </div> -->
-        <div style="position: relative;">
-            <j-jflow ref="jflow" 
-                :class="$style.wrapper" 
-                :configs="jflowconfigs"
-                :genVueComponentKey="genVueComponentKey"
-                @update:loading="onload"
-                @click="onClickNoWhere"
-                @link="link"
-                @pressEnd="onDrop"
-                @contextclick="openCreatePopper">
-                <template #SignalIn="{ source }">
-                    <SignalInNode :node="source"></SignalInNode>
-                </template>
-                <template #Function="{ source }">
-                    <ProgramNode :node="source"></ProgramNode>
-                </template>
-                <template #plainlink="{ configs }">
-                    <program-link :configs="configs"></program-link>
-                </template>
-            </j-jflow>
-            <div :class="$style.groundAnchor" ref="groundAnchor">
-                <Popper :meta="popper"></Popper>
+                <button @click="onexport">导出数据</button>
+                <dialog ref="dialogRef" style="width: 500px;height: 600px;">
+                    <button @click="closeexport">关闭</button>
+                    <textarea style="width: 100%; height: 500px; border: 3px solid black; overflow: scroll;">{{ exportData }}</textarea>
+                </dialog>
+
+                <button @click="onimport">导入数据</button>
+                <dialog ref="importDialogRef" style="width: 500px;height: 600px;">
+                    <button @click="doimport">导入</button>
+                    <textarea ref="importTextAreaRef" style="width: 100%; height: 500px; border: 3px solid black; overflow: scroll;" placeholder="粘贴数据于此处"></textarea>
+                </dialog>
             </div>
         </div>
         <div>
-            <div>
-                <button @click="onexport">导出数据</button>
-            </div>
-            <dialog ref="dialogRef" style="width: 500px;height: 600px;">
-                <button @click="closeexport">关闭</button>
-                <textarea style="width: 100%; height: 500px; border: 3px solid black; overflow: scroll;">{{ exportData }}</textarea>
-            </dialog>
-
-            <div>
-                <button @click="onimport">导入数据</button>
-            </div>
-            <dialog ref="importDialogRef" style="width: 500px;height: 600px;">
-                <button @click="doimport">导入</button>
-                <textarea ref="importTextAreaRef" style="width: 100%; height: 500px; border: 3px solid black; overflow: scroll;" placeholder="粘贴数据于此处"></textarea>
-            </dialog>
+            <selectSignal ref="selectorA"/>
+            <selectSignal ref="selectorB"/>
+            <barChartSignal ref="barChartA" />
         </div>
-
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted, toRaw, watch, provide } from 'vue'; 
+import { ref, onMounted, toRaw, watch, provide, getCurrentInstance } from 'vue'; 
 import ProgramLink from './components/program-link.vue';
 import ProgramNode from './components/program-node.vue';
 import SignalInNode from './components/signalin-node';
+import SignalOutNode from './components/signalout-node';
 import Popper from './popper/popper.js';
 import { useFocus } from './mixins/usefocus';
 import { useLink } from './mixins/uselink';
 import { useDrag } from './mixins/useDrag';
 import { usePopper } from './popper/usePopper';
 
+import selectSignal from './signal-components/select-signal.vue';
+import barChartSignal from './signal-components/bar-chart.vue'
 
 import commonEventAdapter from './customEventAdapter';
 
-import data from './weatherdata.json';
+import data from './weather-data-http.json';
 import { FreeLayout } from './layout';
-import { boot } from './model';
-const program = boot(data);
+import { Program, NodeResolver } from './model';
+import { applyResolver } from './singnal-model';
+const node_resolver = new NodeResolver();
+applyResolver(node_resolver);
+const program = new Program(node_resolver);
+program.load(data);
 const { resetFocus, doDelete } = useFocus(program);
 const { startDrag, endDrag } = useDrag();
 
@@ -182,7 +186,25 @@ document.addEventListener('keydown', (event) => {
    
 });
 
+const selectorA = ref(null);
+const selectorB = ref(null);
+const barChartA = ref(null);
+const refs = { selectorA, selectorB, barChartA }
+const refsGetter = (componentName) => {
+    // const instance = getCurrentInstance();
+    const compnent = refs[componentName].value;
+    return compnent;
+}
+
 onMounted(() => {
+    program.nodes.forEach(n => {
+        if(n.type === 'ComponentSignalOut') {
+            n.signal.setComponentGetter(refsGetter);
+        }
+        if(n.type === 'ComponentSignalIn') {
+            n.signal.bindUpdater(refsGetter);
+        }
+    })
     program.run();
 })
 </script>

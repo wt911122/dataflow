@@ -1,5 +1,5 @@
 import { toRaw } from 'vue';
-import { ProgramNode, SignalInNode, NumericSignal } from './model';
+import { ProgramNode, SignalInNode, SignalOutNode } from './model';
 
 
 class BaseNode {
@@ -21,6 +21,7 @@ class ArgmentLayoutNode extends BaseNode {
 class SignalInLayoutNode extends BaseNode {
     type = 'SignalIn'
 }
+
 class OutputLayoutNode extends BaseNode { }
 
 class ProgramLayoutNode extends BaseNode {
@@ -39,6 +40,17 @@ class ProgramLayoutNode extends BaseNode {
         return this.output;
     }
 }
+class SignalOutLayoutNode extends BaseNode {
+    type = 'SignalOut'
+    constructor(source) {
+        super(source);
+        this.argus = source.signal.declaration.getArguments().map(a => new ArgmentLayoutNode(a))
+    }
+
+    getArgumentLayoutNode(keyword) {
+        return this.argus.find((a) => a.keyword === keyword);
+    }
+}
 
 function makeNode(source) {
     if(source instanceof ProgramNode) {
@@ -46,6 +58,9 @@ function makeNode(source) {
     }
     if(source instanceof SignalInNode) {
         return new SignalInLayoutNode(source);
+    }
+    if(source instanceof SignalOutNode) {
+        return new SignalOutLayoutNode(source);
     }
 }
 
@@ -92,7 +107,6 @@ export class FreeLayout {
         const nodes = this.nodes;
         nodes.forEach((node, idx) => {
             const s = toRaw(node.source);
-            console.log(s)
             const [ x, y ] = s.position;
             const anchor = [x || 0, y || 0];
             const instance = jflow.getRenderNodeBySource(s);
